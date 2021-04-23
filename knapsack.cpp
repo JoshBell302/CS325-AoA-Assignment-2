@@ -1,12 +1,17 @@
 #include <iostream>
 #include <algorithm>
 
+#define TOTAL_WEIGHT 1000
+#define MULTIPLIER 20
+#define TEST_CASES 5
+#define MAX_ITEMS TEST_CASES*MULTIPLIER
+#define SEC_TO_MILLI 1000
+
 // Based my dynamic programming information from this video on youtube: https://www.youtube.com/watch?v=8LusJS5-AGo
-void dynamicKnap(int totalWeight, int weights[], int values[], int numberOfItems) {
-	int knapsack[5][8] = { 0 };
+void dynamicKnap(int totalWeight, int weights[], int values[], int numberOfItems, int knapsack[][TOTAL_WEIGHT+1]) {
 
 	// Start timer
-	int startTime = clock();
+	clock_t startTime = clock();
 
 	// Checking to see the maximum value determined by the weight and item value
 	for (int i = 0; i <= numberOfItems; i++) {
@@ -21,12 +26,11 @@ void dynamicKnap(int totalWeight, int weights[], int values[], int numberOfItems
 	}
 
 	// End timer and calculate total time
-	int endTime = clock();
-	int total = (startTime - endTime) / (CLOCKS_PER_SEC / 1000);
+	clock_t total = (clock() - startTime) / (CLOCKS_PER_SEC / SEC_TO_MILLI);
 
 	// Print out dynamic information 
 	std::cout << "---Dynamic Knapsack---\nTime(milliseconds) = " << total
-		<< "\nMax Value = " << knapsack[4][7] << std::endl;
+		<< "\nMax Value = " << knapsack[numberOfItems][totalWeight] << std::endl;
 }
 int recursiveKnap(int totalWeight, int weights[], int values[], int numberOfItems) {
 
@@ -39,7 +43,7 @@ int recursiveKnap(int totalWeight, int weights[], int values[], int numberOfItem
 		return recursiveKnap(totalWeight, weights, values, numberOfItems - 1);
 
 	// Returning maximum value
-	return std::max(values[numberOfItems - 1] + 
+	return std::max(values[numberOfItems - 1] +
 		recursiveKnap(totalWeight - weights[numberOfItems - 1],
 			weights, values, numberOfItems - 1),
 		recursiveKnap(totalWeight, weights, values, numberOfItems - 1));
@@ -47,27 +51,35 @@ int recursiveKnap(int totalWeight, int weights[], int values[], int numberOfItem
 
 int main() {
 	// Initializing values
-	int values[] = { 1,4,5,7 };
-	int weights[] = { 1,3,4,5 };
-	int totalWeight = 7;
-	int numberOfItems = sizeof(values) / sizeof(values[0]);
+	int values[MAX_ITEMS + 1] = { 0 };
+	int weights[MAX_ITEMS + 1] = { 0 };
+	int knapsack[MAX_ITEMS + 1][TOTAL_WEIGHT + 1] = { 0 };
+	for (int i = 1; i <= TEST_CASES; i++) {
+		std::cout << "===============================" << std::endl;
+		// Generating random values and weights
+		for (int a = 0; a < (i * MULTIPLIER); a++)
+			values[a] = rand() % TOTAL_WEIGHT;
+		for (int b = 0; b < (i * MULTIPLIER); b++)
+			weights[b] = rand() % TOTAL_WEIGHT;
 
-	// Print out the number of items and total weight to the console
-	std::cout << "N = " << numberOfItems << " W = " << totalWeight << " " << std::endl;
+		int numberOfItems = i * MULTIPLIER;
 
-	// Calling the dynamic version of knapsack
-	dynamicKnap(totalWeight, weights, values, numberOfItems);
+		// Print out the number of items and total weight to the console
+		std::cout << "N = " << numberOfItems << " W = " << TOTAL_WEIGHT << " " << std::endl;
 
-	// Calling the dynamic version of knapsack and starting timer
-	int startTime = clock();
-	int recMax = recursiveKnap(totalWeight, weights, values, numberOfItems);
+		// Calling the dynamic version of knapsack
+		dynamicKnap(TOTAL_WEIGHT, weights, values, numberOfItems, knapsack);
 
-	// End timer and calculate total time
-	int endTime = clock();
-	int total = (startTime - endTime) / (CLOCKS_PER_SEC / 1000);
+		// Calling the dynamic version of knapsack and starting timer
+		clock_t startTime = clock();
+		int recMax = recursiveKnap(TOTAL_WEIGHT, weights, values, numberOfItems);
 
-	// Print out recursive time
-	std::cout << "\n---Recursive Knapsack---\nTime(milliseconds) = " << total 
-		<< "\nRec Max = " << recMax << std::endl;
+		// End timer and calculate total time
+		clock_t total = (clock() - startTime) / (CLOCKS_PER_SEC / SEC_TO_MILLI);
+
+		// Print out recursive time
+		std::cout << "\n---Recursive Knapsack---\nTime(milliseconds) = " << total
+			<< "\nRec Max = " << recMax << std::endl;
+	}
 	return 0;
 }
